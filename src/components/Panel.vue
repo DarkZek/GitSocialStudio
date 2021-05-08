@@ -5,6 +5,7 @@
       <label for="link">GitHub Link</label>
       <input type="text" class="form-control" id="link" v-model="link" placeholder="https://github.com/darkzek/RustCraft">
       <a class="btn btn-primary form-control" v-on:click="getGithubInfo">Fetch Info</a>
+      <label>Themes</label>
       <div class="row themes">
         <a v-on:click="setTheme(1)" v-bind:class="{active: theme == 1, theme: true}">1</a>
         <a v-on:click="setTheme(2)" v-bind:class="{active: theme == 2, theme: true}">2</a>
@@ -14,20 +15,28 @@
       </div>
       <label>Project Image</label>
       <br>
-      <img src="@/assets/logo.png" class="logo-img" ref="background">
+      <input id="logo-img" type="file" v-on:change="imageUploaded('logoImg')" ref="logoImgInput">
+      <label for="logo-img">
+        <img src="https://source.unsplash.com/random/1024x1024" class="logo-img" ref="logoImg">
+      </label>
       <br>
       <label>Background Image</label>
       <br>
-      <img src="@/assets/unknown.png" class="background-img" ref="background">
+      <input id="background-img" type="file" v-on:change="imageUploaded('backgroundImg')" ref="backgroundImgInput">
+      <label for="background-img">
+        <img src="https://images.unsplash.com/photo-1619524668386-a2e9e6f74139?crop=entropy&cs=tinysrgb&fit=crop&fm=jpg&h=1080&ixlib=rb-1.2.1&q=80&w=1920" class="background-img" ref="backgroundImg">
+      </label>
       <br>
       <label>Background Shift</label>
       <input type="range" min="1" max="100" value="100" class="slider form-control" v-model="backgroundShift" v-on:change="setTheme(theme)">
       <label>Title Size</label>
       <input type="range" min="50" max="100" value="90" class="slider form-control" v-model="titleSize" v-on:change="setTheme(theme)">
+      <label>Description Shift</label>
+      <input type="range" min="-150" max="150" value="0" class="slider form-control" v-model="descriptionShift" v-on:change="setTheme(theme)">
       <label for="color">Color</label>
       <input id="color" type="color" class="form-control color" v-model="color" v-bind:style="{'background-color': color}" v-on:change="setTheme(theme)">
     </div>
-    <a v-on:click="save" class="btn btn-secondary form-control">Save</a>
+    <a v-on:click="save" class="btn btn-primary form-control">Save</a>
   </div>
 </template>
 
@@ -38,19 +47,34 @@ export default {
       link: "https://github.com/darkzek/rustcraft",
       repo: {},
       backgroundShift: 100,
+      descriptionShift: 0,
       color: "#b1333a",
       theme: 0,
       titleSize: 90
     };
   },
   methods: {
+    imageUploaded: function(name) {
+      var files = this.$refs[name + "Input"];
+
+      if (files.files && files.files[0]) {
+        var img = this.$refs[name];
+        img.onload = () => {
+            URL.revokeObjectURL(img.src);
+        }
+
+        img.src = URL.createObjectURL(files.files[0]);
+      }
+    },
     setTheme: function(n) {
+      if (n != 1) { return; }
       if (this.repo == {}) { alert("Enter github link first"); }
       this.theme = n;
       this.eventHub.$emit('setTheme', {
         theme: n,
         data: this,
-        background: this.$refs.background
+        logoImg: this.$refs.logoImg,
+        backgroundImg: this.$refs.backgroundImg
       });
     },
     getGithubInfo: function() {
@@ -153,6 +177,12 @@ img {
   text-decoration: none;
   transition: ease-in 0.1s all;
 }
+.theme:first-child {
+  cursor: pointer !important;
+}
+.themes .theme {
+  cursor: not-allowed;
+}
 .active {
   background-color: var(--primary) !important;
   color: white !important;
@@ -169,6 +199,9 @@ img {
 }
 .color {
   cursor: pointer;
+}
+input[type=file] {
+  display: none;
 }
 h3 {
   margin: 40px 0 0;

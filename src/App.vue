@@ -6,6 +6,9 @@
           <Preview/>
         </div>
     </div>
+    <div id="nomobile">
+      <a>No Mobile Support.</a>
+    </div>
   </div>
 </template>
 
@@ -46,5 +49,19 @@ body {
   -moz-osx-font-smoothing: grayscale;
   text-align: center;
   color: #2c3e50;
+}
+
+@media only screen and (max-width: 1260px) {
+  #app .row {
+    display: none;
+  }
+  #nomobile a {
+    position: absolute;
+    left: 0px;
+    right: 0px;
+    top: 0px;
+    bottom: 0px;
+    margin: auto;
+  }
 }
 </style>
