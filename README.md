@@ -1,4 +1,4 @@
-# git_social_studio
+# Git Social Studio
 
 ## Project setup
 ```
