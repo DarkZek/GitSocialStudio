@@ -1,9 +1,9 @@
 <template>
   <div class="panel col-6">
-    <h1>GitHub Theme Creator</h1>
+    <h1>GitHub Theme Studio</h1>
     <div class="scroll">
       <label for="link">GitHub Link</label>
-      <input type="text" class="form-control" id="link" v-model="link" placeholder="https://github.com/darkzek/RustCraft">
+      <input type="text" class="form-control" id="link" v-model="link" placeholder="https://github.com/username/repository_name">
       <a class="btn btn-primary form-control" v-on:click="getGithubInfo">Fetch Info</a>
       <label>Themes</label>
       <div class="row themes">
@@ -16,16 +16,20 @@
       <label>Project Image</label>
       <br>
       <input id="logo-img" type="file" v-on:change="imageUploaded('logoImg')" ref="logoImgInput">
-      <label for="logo-img">
-        <img src="https://source.unsplash.com/random/1024x1024" class="logo-img" ref="logoImg">
+      <label for="logo-img" class="img-label">
+        <img src="https://source.unsplash.com/256x256/?logo,icon,nature" class="logo-img" ref="logoImg">
       </label>
+      <br>
+      <a class="remove" v-on:click="removeImage('logoImg', $event)">Remove</a>
       <br>
       <label>Background Image</label>
       <br>
       <input id="background-img" type="file" v-on:change="imageUploaded('backgroundImg')" ref="backgroundImgInput">
       <label for="background-img">
-        <img src="https://images.unsplash.com/photo-1619524668386-a2e9e6f74139?crop=entropy&cs=tinysrgb&fit=crop&fm=jpg&h=1080&ixlib=rb-1.2.1&q=80&w=1920" class="background-img" ref="backgroundImg">
+        <img src="https://source.unsplash.com/1600x900/?abstract" class="background-img" ref="backgroundImg">
       </label>
+      <br>
+      <a class="remove" v-on:click="removeImage('backgroundImg', $event)">Remove</a>
       <br>
       <label>Background Shift</label>
       <input type="range" min="1" max="100" value="100" class="slider form-control" v-model="backgroundShift" v-on:change="setTheme(theme)">
@@ -33,10 +37,14 @@
       <input type="range" min="50" max="100" value="90" class="slider form-control" v-model="titleSize" v-on:change="setTheme(theme)">
       <label>Description Shift</label>
       <input type="range" min="-150" max="150" value="0" class="slider form-control" v-model="descriptionShift" v-on:change="setTheme(theme)">
+      <label>Logo Size</label>
+      <input type="range" min="50" max="150" value="100" class="slider form-control" v-model="logoSize" v-on:change="setTheme(theme)">
+      <label>Logo Shift</label>
+      <input type="range" min="-100" max="100" value="0" class="slider form-control" v-model="logoShift" v-on:change="setTheme(theme)">
       <label for="color">Color</label>
       <input id="color" type="color" class="form-control color" v-model="color" v-bind:style="{'background-color': color}" v-on:change="setTheme(theme)">
     </div>
-    <a v-on:click="save" class="btn btn-primary form-control">Save</a>
+    <a class="save-button">To save image, right click on the preview</a>
   </div>
 </template>
 
@@ -46,21 +54,40 @@ export default {
     return {
       link: "https://github.com/darkzek/rustcraft",
       repo: {},
-      backgroundShift: 100,
+      backgroundShift: 75,
       descriptionShift: 0,
-      color: "#b1333a",
+      color: this.randomColor(),
       theme: 0,
-      titleSize: 90
+      titleSize: 90,
+      logoSize: 100.0,
+      logoShift: 0.0,
     };
   },
   methods: {
+    randomColor: function() {
+      let hsl = function hslToHex(h, s, l) {
+        l /= 100;
+        const a = s * Math.min(l, 1 - l) / 100;
+        const f = n => {
+          const k = (n + h / 30) % 12;
+          const color = l - a * Math.max(Math.min(k - 3, 9 - k, 1), -1);
+          return Math.round(255 * color).toString(16).padStart(2, '0');   // convert to Hex and prefix "0" if needed
+        };
+        return `#${f(0)}${f(8)}${f(4)}`;
+      };
+      return hsl((Math.random() * 100), 100, 50);
+    },
+    removeImage: function(name) {
+      this.$refs[name].src = "";
+    },
     imageUploaded: function(name) {
       var files = this.$refs[name + "Input"];
 
       if (files.files && files.files[0]) {
         var img = this.$refs[name];
         img.onload = () => {
-            URL.revokeObjectURL(img.src);
+          URL.revokeObjectURL(img.src);
+          this.setTheme(this.theme);
         }
 
         img.src = URL.createObjectURL(files.files[0]);
@@ -68,7 +95,7 @@ export default {
     },
     setTheme: function(n) {
       if (n != 1) { return; }
-      if (this.repo == {}) { alert("Enter github link first"); }
+      if (this.repo.created_at == null) { alert("Enter github link first"); return; }
       this.theme = n;
       this.eventHub.$emit('setTheme', {
         theme: n,
@@ -95,6 +122,7 @@ export default {
 
       var request = new XMLHttpRequest();
       request.open('GET', 'https://api.github.com/repos/' + address, true);
+      request.setRequestHeader("Accept", "application/vnd.github.mercy-preview+json");
 
       request.onload = function() {
         if (request.status >= 200 && request.status < 400) {
@@ -114,15 +142,10 @@ export default {
       request.send();
     },
     save: function() {
-      let downloadLink = document.createElement('a');
-      downloadLink.setAttribute('download', 'Github_Social.png');
-
-      let canvas = document.getElementById('canvas');
-      canvas.toBlob(function(blob) {
-      let url = URL.createObjectURL(blob);
-      downloadLink.setAttribute('href', url);
-      downloadLink.click();
-    });
+      var link = document.createElement('a');
+      link.download = 'filename.png';
+      link.href = document.getElementById('canvas').toDataURL()
+      link.click();
     }
   }
 }
@@ -144,8 +167,8 @@ img {
 .background-img {
   max-width: 100%;
   max-height: 200px;
-  min-height: 200px;
-  min-width: 50%;
+  min-height: 150px;
+  min-width: 250px;
   border-radius: 10px;
   background-color: var(--grey);
   cursor: pointer;
@@ -154,7 +177,7 @@ img {
   max-width: 70%;
   max-height: 150px;
   min-height: 50px;
-  min-width: 20%;
+  min-width: 50px;
   border-radius: 10px;
   background-color: var(--grey);
   cursor: pointer;
@@ -203,6 +226,29 @@ img {
 input[type=file] {
   display: none;
 }
+
+/* Image Uploading */
+.remove {
+  padding: 6px 16px 4px 16px;
+  margin-left: 10px;
+  cursor: pointer;
+  color: black;
+  text-decoration: none;
+  margin-top: -20px;
+}
+.remove:hover {
+  background-color: var(--grey);
+  border-radius: 10px;
+}
+
+.img-label {
+  position: relative;
+}
+
+.save-button {
+  color: var(--dark-grey);
+}
+
 h3 {
   margin: 40px 0 0;
 }

@@ -7,5 +7,6 @@ module.exports = {
         splitChunks: false
       }
     },
+    publicPath: ''
   }
   

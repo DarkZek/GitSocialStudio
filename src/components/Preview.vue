@@ -6,7 +6,7 @@
     <!-- Ensuring fonts are preloaded -->
     <div style="font-family: Open Sans;"><a style="opacity: 0.001; position: absolute; top: -10px;">t</a></div>
     <div style="font-family: PT Sans Caption;"><a style="opacity: 0.001; position: absolute; top: -10px;">t</a></div>
-    <img ref="githubLogo" src="https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png" style="opacity: 0.001; position: absolute; top: -100px;">
+    <img ref="githubLogo" src="@/assets/Github.svg" style="opacity: 0.001; position: absolute; top: -100px;">
   </div>
 </template>
 
@@ -36,6 +36,10 @@ export default {
             var ctx = canvas.getContext("2d");
             ctx.clearRect(0, 0, canvas.width, canvas.height);
 
+            // Draw default white
+            ctx.fillStyle = "white";
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
             // Draw background image
             let backgroundRatio = data.backgroundImg.width / data.backgroundImg.height;
             // Move left as the slider is changed
@@ -44,16 +48,22 @@ export default {
             
             // Gradient
             let graidentLength = (canvasWidth / 2.0) + 100;
+            // Make gradient smoother
             var grd = ctx.createLinearGradient(0, 0, graidentLength, 0);
-            grd.addColorStop(0, "rgba(255,255,255,0)");
-            grd.addColorStop(1, "white");
-            grd.addColorStop(1, "white");
-
-            // Fill with gradient
+            grd.addColorStop(0, "rgba(255,255,255,0.2)");
+            grd.addColorStop(0.1, "rgba(255,255,255,0.25)");
+            grd.addColorStop(0.25, "rgba(255,255,255,0.3)");
+            grd.addColorStop(0.35, "rgba(255,255,255,0.4)");
+            grd.addColorStop(0.5, "rgba(255,255,255,0.6)");
+            grd.addColorStop(0.6, "rgba(255,255,255,0.75)");
+            grd.addColorStop(0.7, "rgba(255,255,255,0.9)");
+            grd.addColorStop(0.8, "rgba(255,255,255,0.98)");
+            grd.addColorStop(1, "rgba(255,255,255,1)");
             ctx.fillStyle = grd;
             ctx.fillRect(0, 0, graidentLength, canvasHeight); 
 
             // Fill rest
+            ctx.fillStyle = "white";
             ctx.fillRect(graidentLength, 0, canvasWidth - graidentLength, canvasHeight);
 
             // Technically this should be Nimbus Sans, however that is paid
@@ -73,6 +83,9 @@ export default {
             ctx.fillStyle = "#7d7d81";
             ctx.font = "35px Open Sans";
             var lineGap = 50;
+            var lines = 0;
+
+            let descriptionX = canvasWidth - margins - nameWidth - data.data.descriptionShift;
 
             let desc = data.data.repo.description;
             for (var i = 0; i < 3; i++) {
@@ -87,7 +100,8 @@ export default {
 
                 desc = desc.substr(line.length);
                 if (i == 2) { line += "..."; }
-                ctx.fillText(line, canvasWidth - margins - nameWidth - data.data.descriptionShift, (canvasHeight / 4) + (lineGap * 2) + (lineGap * i)); 
+                ctx.fillText(line, descriptionX, (canvasHeight / 4) + (lineGap * 2) + (lineGap * i)); 
+                lines += 1;
             }
 
             // Bottom line
@@ -95,7 +109,66 @@ export default {
             ctx.fillRect(0, canvasHeight - 30, canvasWidth, 30);
 
             // Github logo
-            ctx.drawImage(this.$refs.githubLogo, canvasWidth - margins - 40, canvasHeight - margins - 40, 80, 80);
+            ctx.drawImage(this.$refs.githubLogo, canvasWidth - margins - 40, canvasHeight - margins - 40, 70, 70);
+
+            // Draw project logo
+            let logoRatio = data.logoImg.width / data.logoImg.height;
+            var scale = (data.data.logoSize / 100);
+            var startingSize = canvasHeight / 2.5;
+            // Scale
+            startingSize *= scale;
+            
+            let roundImg = function roundedImage(ctx, x, y, width, height, radius) {
+                ctx.beginPath();
+                ctx.moveTo(x + radius, y);
+                ctx.lineTo(x + width - radius, y);
+                ctx.quadraticCurveTo(x + width, y, x + width, y + radius);
+                ctx.lineTo(x + width, y + height - radius);
+                ctx.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
+                ctx.lineTo(x + radius, y + height);
+                ctx.quadraticCurveTo(x, y + height, x, y + height - radius);
+                ctx.lineTo(x, y + radius);
+                ctx.quadraticCurveTo(x, y, x + radius, y);
+                ctx.closePath();
+            };
+            ctx.save();
+            roundImg(ctx, margins + 20 - (data.data.logoSize / 2.0) + parseFloat(data.data.logoShift), (canvasHeight / 4) - data.data.titleSize + 20, startingSize, startingSize / logoRatio, 15);
+            ctx.clip();
+            ctx.drawImage(data.logoImg, margins + 20 - (data.data.logoSize / 2.0) + parseFloat(data.data.logoShift), (canvasHeight / 4) - data.data.titleSize + 20, startingSize, startingSize / logoRatio);
+            ctx.restore();
+            
+            var drawRoundedBackground = function(x, y, width, height) {
+                // Account for sides of circle
+                width -= height;
+
+                // Center
+                ctx.fillStyle = data.data.color;
+                ctx.fillRect(x, y, width, height);
+
+                ctx.beginPath();
+                // Left circle
+                ctx.arc(x, y + (height / 2), height / 2, 0, 2 * Math.PI);
+                ctx.fill(); 
+
+                // Right circle
+                ctx.arc(x + width, y + (height / 2), height / 2, 0, 2 * Math.PI);
+                ctx.fill(); 
+            }
+
+            // Draw tags
+            var workingX = 0;
+            for (i = 0; i < Math.min(4, data.data.repo.topics.length); i++) {
+                let topic = data.data.repo.topics[i];
+
+                let width = ctx.measureText(topic, 0, 0).width;
+
+                drawRoundedBackground(descriptionX + workingX + 30, (canvasHeight / 4) + (lineGap * 2) + (lineGap * (lines - 0.35)), width + 65, 65);
+                ctx.fillStyle = "white";
+                ctx.fillText(topic, descriptionX + workingX + 30, (canvasHeight / 4) + (lineGap * 2) + (lineGap * (lines + 0.5)));
+                workingX += width + 90;
+            }
+
+            ctx.save();
         }
     }
 }
