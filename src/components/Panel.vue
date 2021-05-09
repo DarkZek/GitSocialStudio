@@ -52,7 +52,7 @@
 export default {
   data: function() {
     return {
-      link: "https://github.com/darkzek/rustcraft",
+      link: "",
       repo: {},
       backgroundShift: 75,
       descriptionShift: 0,
