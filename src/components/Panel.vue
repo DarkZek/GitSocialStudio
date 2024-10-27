@@ -17,7 +17,7 @@
       <br>
       <input id="logo-img" type="file" v-on:change="imageUploaded('logoImg')" ref="logoImgInput">
       <label for="logo-img" class="img-label">
-        <img src="https://source.unsplash.com/256x256/?logo,icon,nature" class="logo-img" ref="logoImg">
+        <img src="https://static-00.iconduck.com/assets.00/thinking-face-emoji-1935x2048-ul7zt5ry.png" class="logo-img" ref="logoImg">
       </label>
       <br>
       <a class="remove" v-on:click="removeImage('logoImg', $event)">Remove</a>
@@ -26,7 +26,7 @@
       <br>
       <input id="background-img" type="file" v-on:change="imageUploaded('backgroundImg')" ref="backgroundImgInput">
       <label for="background-img">
-        <img src="https://source.unsplash.com/1600x900/?abstract" class="background-img" ref="backgroundImg">
+        <img src="https://img.freepik.com/free-photo/vibrant-colors-flow-abstract-wave-pattern-generated-by-ai_188544-9781.jpg" class="background-img" ref="backgroundImg">
       </label>
       <br>
       <a class="remove" v-on:click="removeImage('backgroundImg', $event)">Remove</a>

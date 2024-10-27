@@ -10,7 +10,7 @@
   </div>
 </template>
 
-<script>
+<script lang="ts">
 
 var canvasHeight = 640;
 var canvasWidth = 1280;
@@ -176,9 +176,6 @@ export default {
 
 <style scoped>
 
-.preview {
-
-}
 .img {
     position: absolute;
     left: 0px;

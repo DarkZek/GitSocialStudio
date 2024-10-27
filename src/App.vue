@@ -51,7 +51,7 @@ body {
   color: #2c3e50;
 }
 
-@media only screen and (max-width: 1260px) {
+@media only screen and (max-width: 1060px) {
   #app .row {
     display: none;
   }
